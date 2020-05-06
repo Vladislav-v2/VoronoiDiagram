@@ -9,12 +9,12 @@ namespace VoronoiDiagram
 {
     class Site
     {
-        public Point coord;
+        public PointF coord;
         public int sitenbr;
 
         public Site()
         {
-            coord = new Point();
+            coord = new PointF();
         }
     }
 }

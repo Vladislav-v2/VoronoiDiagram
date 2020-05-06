@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace VoronoiDiagram
 {
-    class Voronoi
+    public class Voronoi
     {
         // ************* Private members ******************
         double borderMinX, borderMaxX, borderMinY, borderMaxY;
@@ -19,7 +19,7 @@ namespace VoronoiDiagram
         Site[] sites;
         Site bottomsite;
         int sqrt_nsites;
-        double minDistanceBetweenSites { get; set; }
+        double MinDistanceBetweenSites;
         int PQcount;
         int PQmin;
         int PQhashsize;
@@ -35,31 +35,32 @@ namespace VoronoiDiagram
 
 
         // ************* Public methods ******************
-        // ******************************************
 
         // constructor
         public Voronoi(double minDistanceBetweenSites)
         {
-            //siteidx = 0;
-            //sites = null;
-            //allEdges = null;
-            this.minDistanceBetweenSites = minDistanceBetweenSites;
+            siteidx = 0;
+            MinDistanceBetweenSites = minDistanceBetweenSites;
         }
-
-        /**
-		 * 
-		 * @param xValuesIn Array of X values for each site.
-		 * @param yValuesIn Array of Y values for each site. Must be identical length to yValuesIn
-		 * @param minX The minimum X of the bounding box around the voronoi
-		 * @param maxX The maximum X of the bounding box around the voronoi
-		 * @param minY The minimum Y of the bounding box around the voronoi
-		 * @param maxY The maximum Y of the bounding box around the voronoi
-		 * @return
-		 */
-        // تستدعى هذه العملية لإنشاء مخطط فورونوي
-        public List<GraphEdge> generateVoronoi(double[] xValuesIn, double[] yValuesIn, double minX, double maxX, double minY, double maxY)
+       
+        public List<GraphEdge> GenerateVoronoi(double[] xValuesIn, double[] yValuesIn, double minX, double maxX, double minY, double maxY)
         {
-            sort(xValuesIn, yValuesIn, xValuesIn.Length);
+            Sort(xValuesIn, yValuesIn, xValuesIn.Length);
+
+            // Check bounding box inputs - if mins are bigger than maxes, swap them
+            double temp = 0;
+            if (minX > maxX)
+            {
+                temp = minX;
+                minX = maxX;
+                maxX = temp;
+            }
+            if (minY > maxY)
+            {
+                temp = minY;
+                minY = maxY;
+                maxY = temp;
+            }
 
             borderMinX = minX;
             borderMinY = minY;
@@ -67,16 +68,16 @@ namespace VoronoiDiagram
             borderMaxY = maxY;
 
             siteidx = 0;
-            voronoi_bd();
+            Voronoi_bd();
             return allEdges;
         }
 
 
         /*********************************************************
-		 * Private methods - implementation details
-		 ********************************************************/
+         * Private methods - implementation details
+         ********************************************************/
 
-        private void sort(double[] xValuesIn, double[] yValuesIn, int count)
+        private void Sort(double[] xValuesIn, double[] yValuesIn, int count)
         {
             sites = null;
             allEdges = new List<GraphEdge>();
@@ -85,8 +86,7 @@ namespace VoronoiDiagram
             nvertices = 0;
             nedges = 0;
 
-            double sn = nsites + 4;
-            sqrt_nsites = (int)Math.Sqrt(sn);
+            sqrt_nsites = (int)Math.Sqrt(nsites + 4.0);
 
             // Copy the inputs so we don't modify the originals
             double[] xValues = new double[count];
@@ -96,16 +96,12 @@ namespace VoronoiDiagram
                 xValues[i] = xValuesIn[i];
                 yValues[i] = yValuesIn[i];
             }
-            sortNode(xValues, yValues, count);
+            SortNode(xValues, yValues, count);
         }
 
         private void qsort(Site[] sites)
         {
-            List<Site> listSites = new List<Site>(sites.Length);
-            for (int i = 0; i < sites.Length; i++)
-            {
-                listSites.Add(sites[i]);
-            }
+            List<Site> listSites = new List<Site>(sites);
 
             listSites.Sort(new SiteSorterYX());
 
@@ -116,7 +112,7 @@ namespace VoronoiDiagram
             }
         }
 
-        private void sortNode(double[] xValues, double[] yValues, int numPoints)
+        private void SortNode(double[] xValues, double[] yValues, int numPoints)
         {
             nsites = numPoints;
             sites = new Site[nsites];
@@ -128,8 +124,8 @@ namespace VoronoiDiagram
             for (int i = 0; i < nsites; i++)
             {
                 sites[i] = new Site();
-                sites[i].coord.X = (int)xValues[i];
-                sites[i].coord.Y = (int)yValues[i];
+                sites[i].coord.X = (float)xValues[i];
+                sites[i].coord.Y = (float)yValues[i];
                 sites[i].sitenbr = i;
 
                 if (xValues[i] < xmin)
@@ -148,7 +144,7 @@ namespace VoronoiDiagram
             deltay = ymax - ymin;
         }
 
-        private Site nextone()
+        private Site NextOne()
         {
             Site s;
             if (siteidx < nsites)
@@ -160,10 +156,12 @@ namespace VoronoiDiagram
             return null;
         }
 
-        private Edge bisect(Site s1, Site s2)
+        private Edge Bisect(Site s1, Site s2)
         {
             double dx, dy, adx, ady;
-            Edge newedge = new Edge();
+            Edge newedge;
+
+            newedge = new Edge();
 
             newedge.reg[0] = s1;
             newedge.reg[1] = s2;
@@ -176,7 +174,7 @@ namespace VoronoiDiagram
 
             adx = dx > 0 ? dx : -dx;
             ady = dy > 0 ? dy : -dy;
-            newedge.c = (s1.coord.X * dx + s1.coord.Y * dy + (dx * dx + dy * dy) * 0.5);
+            newedge.c = s1.coord.X * dx + s1.coord.Y * dy + (dx * dx + dy * dy) * 0.5;
 
             if (adx > ady)
             {
@@ -197,7 +195,7 @@ namespace VoronoiDiagram
             return newedge;
         }
 
-        private void makevertex(Site v)
+        private void Makevertex(Site v)
         {
             v.sitenbr = nvertices;
             nvertices++;
@@ -238,7 +236,7 @@ namespace VoronoiDiagram
             Halfedge last, next;
 
             he.vertex = v;
-            he.ystar = (double)(v.coord.Y + offset);
+            he.ystar = (v.coord.Y + offset);
             last = PQhash[PQbucket(he)];
 
             while
@@ -277,12 +275,12 @@ namespace VoronoiDiagram
 
         private bool PQempty()
         {
-            return (PQcount == 0);
+            return PQcount == 0;
         }
 
-        private Point PQ_min()
+        private PointF PQ_min()
         {
-            Point answer = new Point();
+            PointF answer = new PointF();
 
             while (PQhash[PQmin].PQnext == null)
             {
@@ -290,7 +288,7 @@ namespace VoronoiDiagram
             }
 
             answer.X = PQhash[PQmin].PQnext.vertex.coord.X;
-            answer.Y = (int)PQhash[PQmin].PQnext.ystar;
+            answer.Y = (float)PQhash[PQmin].PQnext.ystar;
             return answer;
         }
 
@@ -307,7 +305,15 @@ namespace VoronoiDiagram
 
         private Halfedge HEcreate(Edge e, int pm)
         {
-            return new Halfedge { ELedge = e, ELpm = pm, PQnext = null,vertex = null};           
+            Halfedge answer = new Halfedge
+            {
+                ELedge = e,
+                ELpm = pm,
+                PQnext = null,
+                vertex = null
+            };
+
+            return answer;
         }
 
         private bool ELinitialize()
@@ -342,35 +348,35 @@ namespace VoronoiDiagram
             return he.ELleft;
         }
 
-        private Site leftreg(Halfedge he)
+        private Site Leftreg(Halfedge he)
         {
             if (he.ELedge == null)
             {
                 return bottomsite;
             }
-            return (he.ELpm == LE ? he.ELedge.reg[LE] : he.ELedge.reg[RE]);
+            return he.ELpm == LE ? he.ELedge.reg[LE] : he.ELedge.reg[RE];
         }
 
         private void ELinsert(Halfedge lb, Halfedge newHe)
         {
             newHe.ELleft = lb;
             newHe.ELright = lb.ELright;
-            (lb.ELright).ELleft = newHe;
+            lb.ELright.ELleft = newHe;
             lb.ELright = newHe;
         }
 
-        /*
-		 * This delete routine can't reclaim node, since pointers from hash table
-		 * may be present.
-		 */
+
+         //This delete routine can't reclaim node, since pointers from hash table
+         // may be present.
+
         private void ELdelete(Halfedge he)
         {
-            (he.ELleft).ELright = he.ELright;
-            (he.ELright).ELleft = he.ELleft;
+            he.ELleft.ELright = he.ELright;
+            he.ELright.ELleft = he.ELleft;
             he.deleted = true;
         }
 
-        /* Get entry from hash table, pruning any deleted nodes */
+        // Get entry from hash table, pruning any deleted nodes
         private Halfedge ELgethash(int b)
         {
             Halfedge he;
@@ -381,17 +387,17 @@ namespace VoronoiDiagram
             if (he == null || !he.deleted)
                 return he;
 
-            /* Hash table points to deleted half edge. Patch as necessary. */
+            // Hash table points to deleted half edge. Patch as necessary.
             ELhash[b] = null;
             return null;
         }
 
-        private Halfedge ELleftbnd(Point p)
+        private Halfedge ELleftbnd(PointF p)
         {
             int bucket;
             Halfedge he;
 
-            /* Use hash table to get close to desired halfedge */
+            // Use hash table to get close to desired halfedge
             // use the hash function to find the place in the hash map that this
             // HalfEdge should be
             bucket = (int)((p.X - xmin) / deltax * ELhashsize);
@@ -417,7 +423,7 @@ namespace VoronoiDiagram
             }
 
             /* Now search linear list of halfedges for the correct one */
-            if (he == ELleftend || (he != ELrightend && right_of(he, p)))
+            if (he == ELleftend || (he != ELrightend && Right_of(he, p)))
             {
                 // keep going right on the list until either the end is reached, or
                 // you find the 1st edge which the point isn't to the right of
@@ -425,7 +431,7 @@ namespace VoronoiDiagram
                 {
                     he = he.ELright;
                 }
-                while (he != ELrightend && right_of(he, p));
+                while (he != ELrightend && Right_of(he, p));
                 he = he.ELleft;
             }
             else
@@ -436,10 +442,10 @@ namespace VoronoiDiagram
                 {
                     he = he.ELleft;
                 }
-                while (he != ELleftend && !right_of(he, p));
+                while (he != ELleftend && !Right_of(he, p));
             }
 
-            /* Update hash table and reference counts */
+            // Update hash table and reference counts
             if (bucket > 0 && bucket < ELhashsize - 1)
             {
                 ELhash[bucket] = he;
@@ -448,7 +454,7 @@ namespace VoronoiDiagram
             return he;
         }
 
-        private void pushGraphEdge(Site leftSite, Site rightSite, double x1, double y1, double x2, double y2)
+        private void PushGraphEdge(Site leftSite, Site rightSite, double x1, double y1, double x2, double y2)
         {
             GraphEdge newEdge = new GraphEdge();
             allEdges.Add(newEdge);
@@ -461,7 +467,7 @@ namespace VoronoiDiagram
             newEdge.site2 = rightSite.sitenbr;
         }
 
-        private void clip_line(Edge e)
+        private void Clip_line(Edge e)
         {
             double pxmin, pxmax, pymin, pymax;
             Site s1, s2;
@@ -473,9 +479,7 @@ namespace VoronoiDiagram
             double X = x2 - x1;
             double Y = y2 - y1;
 
-            // if the distance between the two points this line was created from is
-            // less than the square root of 2 عن جد؟, then ignore it
-            if (Math.Sqrt((X * X) + (Y * Y)) < minDistanceBetweenSites)
+            if (Math.Sqrt((X * X) + (Y * Y)) < MinDistanceBetweenSites)
             {
                 return;
             }
@@ -577,19 +581,19 @@ namespace VoronoiDiagram
                 }
             }
 
-            pushGraphEdge(e.reg[0], e.reg[1], x1, y1, x2, y2);
+            PushGraphEdge(e.reg[0], e.reg[1], x1, y1, x2, y2);
         }
 
-        private void endpoint(Edge e, int lr, Site s)
+        private void Endpoint(Edge e, int lr, Site s)
         {
             e.ep[lr] = s;
             if (e.ep[RE - lr] == null)
                 return;
-            clip_line(e);
+            Clip_line(e);
         }
 
-        /* returns true if p is to right of halfedge e */
-        private bool right_of(Halfedge el, Point p)
+        // returns true if p is to right of halfedge e
+        private bool Right_of(Halfedge el, PointF p)
         {
             Edge e;
             Site topsite;
@@ -623,7 +627,7 @@ namespace VoronoiDiagram
                 }
                 else
                 {
-                    above = p.X + p.X * e.b > e.c;
+                    above = p.X + p.Y * e.b > e.c;
                     if (e.b < 0.0)
                         above = !above;
                     if (!above)
@@ -642,29 +646,28 @@ namespace VoronoiDiagram
             else // e.b == 1.0
             {
                 yl = e.c - e.a * p.X;
-                t1 = p.X - yl;
+                t1 = p.Y - yl;
                 t2 = p.X - topsite.coord.X;
                 t3 = yl - topsite.coord.Y;
                 above = t1 * t1 > t2 * t2 + t3 * t3;
             }
-            return (el.ELpm == LE ? above : !above);
+            return el.ELpm == LE ? above : !above;
         }
 
-        private Site rightreg(Halfedge he)
+        private Site Rightreg(Halfedge he)
         {
-            if (he.ELedge == (Edge)null)
-            // if this halfedge has no edge, return the bottom site (whatever
-            // that is)
+            if (he.ELedge == null)
+            // if this halfedge has no edge, return the bottom site (whatever that is)
             {
                 return (bottomsite);
             }
 
             // if the ELpm field is zero, return the site 0 that this edge bisects,
             // otherwise return site number 1
-            return (he.ELpm == LE ? he.ELedge.reg[RE] : he.ELedge.reg[LE]);
+            return he.ELpm == LE ? he.ELedge.reg[RE] : he.ELedge.reg[LE];
         }
 
-        private double dist(Site s, Site t)
+        private double Dist(Site s, Site t)
         {
             double dx, dy;
             dx = s.coord.X - t.coord.X;
@@ -674,11 +677,11 @@ namespace VoronoiDiagram
 
         // create a new site where the HalfEdges el1 and el2 intersect - note that
         // the Point in the argument list is not used, don't know why it's there
-        private Site intersect(Halfedge el1, Halfedge el2)
+        private Site Intersect(Halfedge el1, Halfedge el2)
         {
             Edge e1, e2, e;
             Halfedge el;
-            double d, xint, yint;
+            float d, xint, yint;
             bool right_of_site;
             Site v; // vertex
 
@@ -692,12 +695,12 @@ namespace VoronoiDiagram
             if (e1.reg[1] == e2.reg[1])
                 return null;
 
-            d = e1.a * e2.b - e1.b * e2.a;
+            d = (float)(e1.a * e2.b - e1.b * e2.a);
             if (-1.0e-10 < d && d < 1.0e-10)
                 return null;
 
-            xint = (e1.c * e2.b - e2.c * e1.b) / d;
-            yint = (e2.c * e1.a - e1.c * e2.a) / d;
+            xint = (float)((e1.c * e2.b - e2.c * e1.b) / d);
+            yint = (float)((e2.c * e1.a - e1.c * e2.a) / d);
 
             if ((e1.reg[1].coord.Y < e2.reg[1].coord.Y)
                 || (e1.reg[1].coord.Y == e2.reg[1].coord.Y && e1.reg[1].coord.X < e2.reg[1].coord.X))
@@ -719,21 +722,21 @@ namespace VoronoiDiagram
             // create a new site at the point of intersection - this is a new vector
             // event waiting to happen
             v = new Site();
-            v.coord.X = (int)xint;
-            v.coord.Y = (int)yint;
+            v.coord.X = xint;
+            v.coord.Y = yint;
             return v;
         }
 
         /*
-		 * implicit parameters: nsites, sqrt_nsites, xmin, xmax, ymin, ymax, deltax,
-		 * deltay (can all be estimates). Performance suffers if they are wrong;
-		 * better to make nsites, deltax, and deltay too big than too small. (?)
-		 */
-        private bool voronoi_bd()
+         * implicit parameters: nsites, sqrt_nsites, xmin, xmax, ymin, ymax, deltax,
+         * deltay (can all be estimates). Performance suffers if they are wrong;
+         * better to make nsites, deltax, and deltay too big than too small. (?)
+         */
+        private bool Voronoi_bd()
         {
             Site newsite, bot, top, temp, p;
             Site v;
-            Point newintstar = new Point();
+            PointF newintstar = new PointF();
             int pm;
             Halfedge lbnd, rbnd, llbnd, rrbnd, bisector;
             Edge e;
@@ -741,8 +744,8 @@ namespace VoronoiDiagram
             PQinitialize();
             ELinitialize();
 
-            bottomsite = nextone();
-            newsite = nextone();
+            bottomsite = NextOne();
+            newsite = NextOne();
             while (true)
             {
                 if (!PQempty())
@@ -756,18 +759,18 @@ namespace VoronoiDiagram
                 if (newsite != null && (PQempty()
                                         || newsite.coord.Y < newintstar.Y
                                         || (newsite.coord.Y == newintstar.Y
-                                            && newsite.coord.X < newintstar.Y)))
+                                            && newsite.coord.X < newintstar.X)))
                 {
                     /* new site is smallest -this is a site event */
                     // get the first HalfEdge to the LEFT of the new site
-                    lbnd = ELleftbnd((newsite.coord));
+                    lbnd = ELleftbnd(newsite.coord);
                     // get the first HalfEdge to the RIGHT of the new site
                     rbnd = ELright(lbnd);
                     // if this halfedge has no edge,bot =bottom site (whatever that
                     // is)
-                    bot = rightreg(lbnd);
+                    bot = Rightreg(lbnd);
                     // create a new edge that bisects
-                    e = bisect(bot, newsite);
+                    e = Bisect(bot, newsite);
 
                     // create a new HalfEdge, setting its ELpm field to 0
                     bisector = HEcreate(e, LE);
@@ -777,10 +780,10 @@ namespace VoronoiDiagram
 
                     // if the new bisector intersects with the left edge,
                     // remove the left edge's vertex, and put in the new one
-                    if ((p = intersect(lbnd, bisector)) != null)
+                    if ((p = Intersect(lbnd, bisector)) != null)
                     {
                         PQdelete(lbnd);
-                        PQinsert(lbnd, p, dist(p, newsite));
+                        PQinsert(lbnd, p, Dist(p, newsite));
                     }
                     lbnd = bisector;
                     // create a new HalfEdge, setting its ELpm field to 1
@@ -790,12 +793,12 @@ namespace VoronoiDiagram
                     ELinsert(lbnd, bisector);
 
                     // if this new bisector intersects with the new HalfEdge
-                    if ((p = intersect(bisector, rbnd)) != null)
+                    if ((p = Intersect(bisector, rbnd)) != null)
                     {
                         // push the HE into the ordered linked list of vertices
-                        PQinsert(bisector, p, dist(p, newsite));
+                        PQinsert(bisector, p, Dist(p, newsite));
                     }
-                    newsite = nextone();
+                    newsite = NextOne();
                 }
                 else if (!PQempty())
                 /* intersection is smallest - this is a vector event */
@@ -811,17 +814,17 @@ namespace VoronoiDiagram
                     // lowest HE
                     rrbnd = ELright(rbnd);
                     // get the Site to the left of the left HE which it bisects
-                    bot = leftreg(lbnd);
+                    bot = Leftreg(lbnd);
                     // get the Site to the right of the right HE which it bisects
-                    top = rightreg(rbnd);
+                    top = Rightreg(rbnd);
 
                     v = lbnd.vertex; // get the vertex that caused this event
-                    makevertex(v); // set the vertex number - couldn't do this
+                    Makevertex(v); // set the vertex number - couldn't do this
                                    // earlier since we didn't know when it would be processed
-                    endpoint(lbnd.ELedge, lbnd.ELpm, v);
+                    Endpoint(lbnd.ELedge, lbnd.ELpm, v);
                     // set the endpoint of
                     // the left HalfEdge to be this vector
-                    endpoint(rbnd.ELedge, rbnd.ELpm, v);
+                    Endpoint(rbnd.ELedge, rbnd.ELpm, v);
                     // set the endpoint of the right HalfEdge to
                     // be this vector
                     ELdelete(lbnd); // mark the lowest HE for
@@ -844,7 +847,7 @@ namespace VoronoiDiagram
                         top = temp;
                         pm = RE;
                     }
-                    e = bisect(bot, top); // create an Edge (or line)
+                    e = Bisect(bot, top); // create an Edge (or line)
                                           // that is between the two Sites. This creates the formula of
                                           // the line, and assigns a line number to it
                     bisector = HEcreate(e, pm); // create a HE from the Edge 'e',
@@ -852,7 +855,7 @@ namespace VoronoiDiagram
                                                 // with its ELedge field
                     ELinsert(llbnd, bisector); // insert the new bisector to the
                                                // right of the left HE
-                    endpoint(e, RE - pm, v); // set one endpoint to the new edge
+                    Endpoint(e, RE - pm, v); // set one endpoint to the new edge
                                              // to be the vector point 'v'.
                                              // If the site to the left of this bisector is higher than the
                                              // right Site, then this endpoint
@@ -860,31 +863,27 @@ namespace VoronoiDiagram
 
                     // if left HE and the new bisector intersect, then delete
                     // the left HE, and reinsert it
-                    if ((p = intersect(llbnd, bisector)) != null)
+                    if ((p = Intersect(llbnd, bisector)) != null)
                     {
                         PQdelete(llbnd);
-                        PQinsert(llbnd, p, dist(p, bot));
+                        PQinsert(llbnd, p, Dist(p, bot));
                     }
 
                     // if right HE and the new bisector intersect, then
                     // reinsert it
-                    if ((p = intersect(bisector, rrbnd)) != null)
+                    if ((p = Intersect(bisector, rrbnd)) != null)
                     {
-                        PQinsert(bisector, p, dist(p, bot));
+                        PQinsert(bisector, p, Dist(p, bot));
                     }
                 }
-                else
-                {
-                    break;
-                }
+                else  break;
             }
 
             for (lbnd = ELright(ELleftend); lbnd != ELrightend; lbnd = ELright(lbnd))
             {
                 e = lbnd.ELedge;
-                clip_line(e);
+                Clip_line(e);
             }
-
             return true;
         }
     }

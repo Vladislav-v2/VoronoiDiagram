@@ -59,5 +59,15 @@ namespace VoronoiDiagram.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap voronoi {
+            get {
+                object obj = ResourceManager.GetObject("voronoi", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
