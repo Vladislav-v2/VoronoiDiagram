@@ -13,20 +13,21 @@ namespace VoronoiDiagram
         Graphics g;
         Voronoi voronoi;
         List<PointF> sites = new List<PointF>();
-        Queue<PointF> newSites = new Queue<PointF>();
         Pen pen;
 
         public VoronoiDiagramForm()
         {
             InitializeComponent();
-            pictBox.AutoSize = true;
+            pictBoxDaigram.AutoSize = true;
             bitmap = new Bitmap(512, 512);
             g = Graphics.FromImage(bitmap);
             g.SmoothingMode = SmoothingMode.HighQuality;
             g.Clear(Color.Transparent);
-            pen = new Pen(Color.Black);
-            pen.Width = 2;
-            pictBox.Image = bitmap;            
+            pen = new Pen(Color.Black)
+            {
+                Width = 2
+            };
+            pictBoxDaigram.Image = bitmap;            
        
             voronoi = new Voronoi(0.1);
         }
@@ -48,7 +49,6 @@ namespace VoronoiDiagram
                 Point p2 = new Point((int)ge[i].x2, (int)ge[i].y2);
                 g.DrawLine(pen, p1.X, p1.Y, p2.X, p2.Y);
             }
-            pictBox.Image = bitmap;
         }
 
         private List<GraphEdge> MakeVoronoiGraph(List<PointF> sites, int width, int height)
@@ -72,25 +72,56 @@ namespace VoronoiDiagram
                 g.FillEllipse(Brushes.Blue, e.X  - 2, e.Y - 2, 4, 4);
                 if (sites.Count > 1)
                     SpreadPoints();
-                pictBox.Image = bitmap;
+                if (showDiagram.Checked)
+                {
+                    pictBoxDaigram.Image = bitmap;
+                }
             }
-        }
-
-        private void btnOpenPlanFile_Click(object sender, EventArgs e)
-        {
-            openPlanFile.ShowDialog();
         }
 
         private void btnClear_Click(object sender, EventArgs e)
         {
             sites.Clear();
             g.Clear(Color.Transparent);
-            pictBox.Image = bitmap;
+            pictBoxDaigram.Image = bitmap;
         }
 
-        private void openPlanFile_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            BuildingPlanImage.BackgroundImage = new Bitmap(openPlanFile.FileName);
+            DaigramPanel.BackgroundImage = new Bitmap(openFileDialog1.FileName);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //openFileDialog1.ShowDialog();
+            DaigramPanel.BackgroundImage = Properties.Resources.voronoi;
+            showBuildPlan.Checked = true;
+        }
+
+        private void showDiagram_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox checkBox = (CheckBox)sender;
+            if(checkBox.Checked)
+            {
+                pictBoxDaigram.Image = bitmap;
+            }
+            else
+            {
+                pictBoxDaigram.Image = null;
+            }
+        }
+
+        private void showBuildPlan_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox checkBox = (CheckBox)sender;
+            if (checkBox.Checked)
+            {
+                DaigramPanel.BackgroundImage = Properties.Resources.voronoi;
+            }
+            else
+            {
+                DaigramPanel.BackgroundImage = null;
+            }
         }
     }
 }

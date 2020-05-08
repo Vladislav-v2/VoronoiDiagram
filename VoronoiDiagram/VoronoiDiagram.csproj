@@ -49,6 +49,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -117,6 +120,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\voronoi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_upload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_clean.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
