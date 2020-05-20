@@ -9,7 +9,7 @@ namespace VoronoiDiagram
 {
     public partial class VoronoiDiagramForm : Form
     {
-        Bitmap bitmap;
+        Bitmap diagramBitmap, buildingPlan;
         Graphics g;
         Voronoi voronoi;
         List<PointF> sites = new List<PointF>();
@@ -19,15 +19,15 @@ namespace VoronoiDiagram
         {
             InitializeComponent();
             pictBoxDaigram.AutoSize = true;
-            bitmap = new Bitmap(512, 512);
-            g = Graphics.FromImage(bitmap);
+            diagramBitmap = new Bitmap(512, 512);
+            g = Graphics.FromImage(diagramBitmap);
             g.SmoothingMode = SmoothingMode.HighQuality;
             g.Clear(Color.Transparent);
             pen = new Pen(Color.Black)
             {
                 Width = 2
             };
-            pictBoxDaigram.Image = bitmap;            
+            pictBoxDaigram.Image = diagramBitmap;            
        
             voronoi = new Voronoi(0.1);
         }
@@ -69,59 +69,53 @@ namespace VoronoiDiagram
             {
                 if(!sites.Contains(new PointF(e.X, e.Y)))
                     sites.Add(new PointF(e.X, e.Y));
-                g.FillEllipse(Brushes.Blue, e.X  - 2, e.Y - 2, 4, 4);
-                if (sites.Count > 1)
-                    SpreadPoints();
-                if (showDiagram.Checked)
+            }
+            else
+            {
+                for (int i = 0; i < sites.Count; i++)
                 {
-                    pictBoxDaigram.Image = bitmap;
+                    if (Math.Sqrt(Math.Pow(sites[i].X - e.X, 2) + Math.Pow(sites[i].Y - e.Y, 3)) < 2)
+                    {
+                        sites.RemoveAt(i);
+                    }
                 }
             }
+            if (sites.Count > 1)
+                SpreadPoints();
+
+             pictBoxDaigram.Image = showDiagram.Checked ? diagramBitmap : null;
+
+
+            lblCount.Text = sites.Count.ToString();
         }
 
         private void btnClear_Click(object sender, EventArgs e)
         {
             sites.Clear();
             g.Clear(Color.Transparent);
-            pictBoxDaigram.Image = bitmap;
+            pictBoxDaigram.Image = diagramBitmap;
+            lblCount.Text = sites.Count.ToString();
         }
 
         private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            DaigramPanel.BackgroundImage = new Bitmap(openFileDialog1.FileName);
+            buildingPlan = new Bitmap(openFileDialog1.FileName);
+            showBuildPlan_CheckedChanged(showBuildPlan, null);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //openFileDialog1.ShowDialog();
-            DaigramPanel.BackgroundImage = Properties.Resources.voronoi;
-            showBuildPlan.Checked = true;
+            openFileDialog1.ShowDialog();          
         }
 
         private void showDiagram_CheckedChanged(object sender, EventArgs e)
         {
-            CheckBox checkBox = (CheckBox)sender;
-            if(checkBox.Checked)
-            {
-                pictBoxDaigram.Image = bitmap;
-            }
-            else
-            {
-                pictBoxDaigram.Image = null;
-            }
+            pictBoxDaigram.Image = ((CheckBox)sender).Checked ? diagramBitmap : null;
         }
 
         private void showBuildPlan_CheckedChanged(object sender, EventArgs e)
         {
-            CheckBox checkBox = (CheckBox)sender;
-            if (checkBox.Checked)
-            {
-                DaigramPanel.BackgroundImage = Properties.Resources.voronoi;
-            }
-            else
-            {
-                DaigramPanel.BackgroundImage = null;
-            }
+            DaigramPanel.BackgroundImage = ((CheckBox)sender).Checked ? buildingPlan: null;
         }
     }
 }

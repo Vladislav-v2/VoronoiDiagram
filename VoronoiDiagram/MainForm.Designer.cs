@@ -38,6 +38,7 @@
             this.MainPanel = new System.Windows.Forms.Panel();
             this.DaigramPanel = new System.Windows.Forms.Panel();
             this.pictBoxDaigram = new System.Windows.Forms.PictureBox();
+            this.lblCount = new System.Windows.Forms.Label();
             this.contextPanel.SuspendLayout();
             this.MainPanel.SuspendLayout();
             this.DaigramPanel.SuspendLayout();
@@ -46,6 +47,7 @@
             // 
             // contextPanel
             // 
+            this.contextPanel.Controls.Add(this.lblCount);
             this.contextPanel.Controls.Add(this.showBuildPlan);
             this.contextPanel.Controls.Add(this.showDiagram);
             this.contextPanel.Controls.Add(this.btnLoadFile);
@@ -93,6 +95,7 @@
             this.btnLoadFile.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.btnLoadFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLoadFile.Font = new System.Drawing.Font("Georgia", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnLoadFile.Image = global::VoronoiDiagram.Properties.Resources.icon_upload;
             this.btnLoadFile.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnLoadFile.Location = new System.Drawing.Point(109, 12);
             this.btnLoadFile.Name = "btnLoadFile";
@@ -122,8 +125,8 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "\"Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif" +
-    "; *.png\"";
+            this.openFileDialog1.Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif;" +
+    " *.png";
             this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
             // 
             // MainPanel
@@ -156,6 +159,16 @@
             this.pictBoxDaigram.TabStop = false;
             this.pictBoxDaigram.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbHousePlan_MouseClick);
             // 
+            // lblCount
+            // 
+            this.lblCount.AutoSize = true;
+            this.lblCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCount.Location = new System.Drawing.Point(140, 65);
+            this.lblCount.Name = "lblCount";
+            this.lblCount.Size = new System.Drawing.Size(25, 25);
+            this.lblCount.TabIndex = 7;
+            this.lblCount.Text = "0";
+            // 
             // VoronoiDiagramForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -186,6 +199,7 @@
         private System.Windows.Forms.Panel MainPanel;
         private System.Windows.Forms.Panel DaigramPanel;
         private System.Windows.Forms.PictureBox pictBoxDaigram;
+        private System.Windows.Forms.Label lblCount;
     }
 }
 
